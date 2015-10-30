@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class Ship : Wrappable {
 	private  CharacterController controller;
-	float speed = 10f;
+	private float speed = 10f;
 	float rotationSpeed = 200f;
 
 	public Rigidbody projectile;
@@ -27,12 +27,19 @@ public class Ship : Wrappable {
 
 		if(Input.GetButtonUp("Shoot"))
 		{
-			Debug.Log (transform.up);
 			Rigidbody shot = Instantiate(projectile, transform.position+transform.up, transform.rotation) as Rigidbody;
 			shot.AddForce(transform.up * projectileSpeed);
 		}
 	}
 
+
+	void OnTriggerEnter(Collider other) {
+		if (other.gameObject.tag == "asteroid") {
+			//Debug.Log ("It's a hit!");		
+			
+			//Deal with asteroid and ship collisions
+		}
+	}
 
 	
 }

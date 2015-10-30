@@ -4,7 +4,6 @@ using System.Collections;
 //Class to handle screen wrapping of objects
 
 public class Wrappable : MonoBehaviour {
-
 	protected float yBound, xBound;
 
 	protected void setBounds () {
