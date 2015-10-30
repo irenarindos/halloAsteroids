@@ -4,6 +4,8 @@ using System.Collections;
 public class Asteroid : Wrappable {
 	private Vector3 direction; 
 	private float speed = 2f;
+	public static AsteroidManager manager;
+	public bool isDebris = false;
 
 	// Use this for initialization
 	void Start () {
@@ -15,24 +17,17 @@ public class Asteroid : Wrappable {
 	void Update () {
 		transform.Translate (direction.x * Time.deltaTime * speed, direction.y * Time.deltaTime * speed, 0f);
 		checkBounds ();
-	//	setScale (.9f);
-	}
-
-	//Scale asteroid
-	void setScale(float factor){
-		transform.localScale = new Vector3 (transform.localScale.x * factor, transform.localScale.y * factor, transform.localScale.z * factor);
 	}
 
 	void OnTriggerEnter(Collider other) {
 		if (other.gameObject.tag == "shot") {
-			Debug.Log ("It's a hit!");		
-			
+			if(!isDebris){
+				manager.generateDebris(transform.position);
+			}
+
 			//Destroy the shot and this asteroid
 			Destroy(other.gameObject);
 			Destroy(gameObject);
-		}
-		if (other.gameObject.tag == "Player") {
-			Debug.Log ("We hit the player!");
 		}
 	}
 
