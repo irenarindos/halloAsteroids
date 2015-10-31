@@ -6,6 +6,10 @@ public class AsteroidManager : MonoBehaviour {
 	public GameObject asteroid;
 	private float startTime;
 	private float asteroidGenDelta = 1f;
+	private int asteroidsToGen = 1;
+	private int asteroidsSpawned=0;
+	private int asteroidsDestroyed=0;
+	private static int level = 1;
 
 	void Start () {
 		startTime = Time.time;
@@ -14,11 +18,23 @@ public class AsteroidManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+		if (asteroidsSpawned != 0 && asteroidsSpawned == asteroidsDestroyed) {
+			level++;
+			asteroidsSpawned=0;
+			asteroidsDestroyed=0;
+			asteroidsToGen = level*level;
+			startTime= Time.time;
+		}
+
+		//Check if we're done generating for this level
+		if (asteroidsToGen <= 0)
+			return;
 		//Periodically generate asteroids with random pos and dir
 		if (Time.time - startTime > asteroidGenDelta) {
 			startTime= Time.time;
 			generateAsteroid(1f,generateRandomPosition(true), false);
-		}	
+			asteroidsToGen--;
+		}
 	}
 
 	//Generate an asteroid at a desired size
@@ -30,6 +46,11 @@ public class AsteroidManager : MonoBehaviour {
 		Asteroid script = a.GetComponent<Asteroid>();
 		script.generateRandomDirection();
 		script.isDebris = isDebris;
+		asteroidsSpawned++;
+	}
+
+	public void asteroidDestroyed(){
+		asteroidsDestroyed++;
 	}
 
 	//Generate 4 smaller asteroids in place
@@ -64,5 +85,9 @@ public class AsteroidManager : MonoBehaviour {
 			}
 		}
 		return randPos;
+	}
+
+	public static int getLevel(){
+		return level;
 	}
 }

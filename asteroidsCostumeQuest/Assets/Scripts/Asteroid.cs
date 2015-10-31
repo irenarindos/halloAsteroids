@@ -26,6 +26,7 @@ public class Asteroid : Wrappable {
 			}
 
 			//Destroy the shot and this asteroid
+			manager.asteroidDestroyed();
 			Destroy(other.gameObject);
 			Destroy(gameObject);
 		}

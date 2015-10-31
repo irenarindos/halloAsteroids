@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Projectile : Wrappable {
 	private float instantiateTime;
-	private float lifespan = 2f;
+	private float lifespan = 1f;
 
 	void Start(){
 		setBounds ();
