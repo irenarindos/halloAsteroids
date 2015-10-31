@@ -4,26 +4,45 @@ using System.Collections;
 public class AsteroidManager : MonoBehaviour {
 
 	public GameObject asteroid;
+
 	private float startTime;
 	private float asteroidGenDelta = 1f;
 	private int asteroidsToGen = 1;
 	private int asteroidsSpawned=0;
 	private int asteroidsDestroyed=0;
 	private static int level = 1;
+	private int baseAsteroidValue = 100;
+	private int baseLevelValue = 1000;
 
 	void Start () {
-		startTime = Time.time;
 		Asteroid.manager = this;
+		init ();
+	}
+
+	public void init(){
+		startTime = Time.time;
+		asteroidsToGen = 1;
+		asteroidsSpawned=0;
+		asteroidsDestroyed=0;
+		level = 1;
+
 	}
 
 	// Update is called once per frame
 	void Update () {
+		if (Ship.restarting) {
+			destroyAsteroids();
+			init();
+			Ship.restarting = false;
+		}
 		if (asteroidsSpawned != 0 && asteroidsSpawned == asteroidsDestroyed) {
 			level++;
 			asteroidsSpawned=0;
 			asteroidsDestroyed=0;
 			asteroidsToGen = level*level;
 			startTime= Time.time;
+			//logic to calc different level value would go here if desired
+			Ship.addPoints (baseLevelValue);
 		}
 
 		//Check if we're done generating for this level
@@ -49,8 +68,15 @@ public class AsteroidManager : MonoBehaviour {
 		asteroidsSpawned++;
 	}
 
-	public void asteroidDestroyed(){
+	public void asteroidDestroyed(bool isDebris, bool awardPoints){
 		asteroidsDestroyed++;
+		if (!awardPoints)
+			return;
+
+		int pointVal = baseAsteroidValue;
+		if(isDebris)
+			pointVal *= 2;
+		Ship.addPoints (pointVal);
 	}
 
 	//Generate 4 smaller asteroids in place
@@ -58,6 +84,13 @@ public class AsteroidManager : MonoBehaviour {
 		for (int i=0; i<4; i++) {
 			generateAsteroid(.5f,pos, true);
 		}
+	}
+
+	void destroyAsteroids(){
+		GameObject [] gameObjects =  GameObject.FindGameObjectsWithTag ("asteroid");
+		
+		for(var i = 0 ; i < gameObjects.Length ; i ++)
+			Destroy(gameObjects[i]);
 	}
 
 	Vector3 generateRandomPosition(bool pinToScreenEdge){
@@ -90,4 +123,5 @@ public class AsteroidManager : MonoBehaviour {
 	public static int getLevel(){
 		return level;
 	}
+
 }

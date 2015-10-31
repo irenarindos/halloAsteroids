@@ -25,9 +25,19 @@ public class Asteroid : Wrappable {
 				manager.generateDebris(transform.position);
 			}
 
-			//Destroy the shot and this asteroid
-			manager.asteroidDestroyed();
+			//Destroy the shot & asteroid, award points
 			Destroy(other.gameObject);
+			manager.asteroidDestroyed(isDebris, true);
+			Destroy(gameObject);
+		}
+
+		if (other.gameObject.tag == "Player") {
+			if(!isDebris){
+				manager.generateDebris(transform.position);
+			}
+			
+			//Destroy this asteroid, don't award points
+			manager.asteroidDestroyed(isDebris, false);	
 			Destroy(gameObject);
 		}
 	}

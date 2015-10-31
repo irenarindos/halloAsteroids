@@ -3,33 +3,59 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class Ship : Wrappable {
-	private  CharacterController controller;
-	private float speed = 10f;
-	private float rotationSpeed = 200f;
-	public Text infoUI;
-	public Text gameOver;
-	public int numLives = 3;
-	public static int levelNum= 0;
-	private bool dead = false;
-	private bool invincible = false;
-	private float invincibleStart;
-	private float invinciblePeriod = .5f;
+
+	public static bool restarting = false;
 
 	public Rigidbody projectile;
+	public Text infoUI;
+	public Text scoreUI;
+	public Text gameOver;
+
+	private static int numLives;
+	private  CharacterController controller;
+	private float rotationSpeed = 200f;
+	private float speed = 10f;
 	private float projectileSpeed = 500f;
+	private bool dead;
+	private bool invincible;
+	private float invincibleStart;
+	private float invinciblePeriod = .5f;
+	private float deathTime;
+
+	//Scorekeeping
+	private static int points;
+	private static int pointsToExtraLife = 100000;
+	private static int extraLivesEarned;
 
 	void Start(){
 		controller = GetComponent<CharacterController>();
 		setBounds();
-		updateUI ();
-		gameOver.enabled = false;
+		init ();
 	}
-	
+
+	void init(){
+		numLives = 3;
+		dead = false;
+		invincible = false;
+		gameOver.enabled = false;
+		points = 0;
+		extraLivesEarned = 0;
+		updateUI ();
+	}
+
 	void Update() {
 		updateUI();
-		if (dead)
-			return;
+		if (dead) {
+			//Wait a second so the player can react to "Game Over"
+			if(Time.time- deathTime < 1f)
+				return;
 
+			if (Input.GetButtonUp ("Shoot")) {
+				init ();
+				restarting = true;
+			}
+			return;
+		}
 		if (invincible) {
 			if((Time.time - invincibleStart) >invinciblePeriod )
 				invincible = false;
@@ -56,7 +82,7 @@ public class Ship : Wrappable {
 		if (invincible)
 			return;
 
-		if (other.gameObject.tag == "asteroid" || other.gameObject.tag == "shot") {
+		if (other.gameObject.tag == "asteroid" ){//|| other.gameObject.tag == "shot") {
 			numLives--;
 			respawn();
 
@@ -77,12 +103,21 @@ public class Ship : Wrappable {
 
 	void updateUI(){
 		infoUI.text = "Level: "+ AsteroidManager.getLevel().ToString ()+ "\t Lives: "+ numLives.ToString();
+		scoreUI.text = "Score: " + points.ToString ();
 	}
 
 	void endGame(){
 		gameOver.enabled = true;
 		dead = true;
-	}
+		deathTime = Time.time;
+	}	
 
-	
+	public static void addPoints(int pointVal){
+		points+= pointVal;
+		//Check if player earned an extra life
+		if(points > (pointsToExtraLife* (extraLivesEarned+1))){
+			numLives++;
+			extraLivesEarned++;
+		}
+	}
 }
