@@ -4,7 +4,7 @@ using System.Collections;
 public class Asteroid : Wrappable {
 	private Vector3 direction; 
 	private float speed = 2f;
-	public static AsteroidManager manager;
+	public static LevelManager manager;
 	public bool isDebris = false;
 
 	// Use this for initialization

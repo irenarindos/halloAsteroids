@@ -1,6 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Text;
+using System.Xml;
+using System.IO;
+
+struct ShipType{
+	string shipName;
+	bool enabled;
+	int levelUnlocked;
+	float speed; 
+	float rotationSpeed;
+	string textureName;
+	string weaponName;
+
+	public void init(string n, bool e, int l, float s, float rs, string t, string sh){
+		shipName = n;
+		enabled = e;
+		levelUnlocked= l;
+		speed = s;
+		rotationSpeed = rs;
+		textureName = t;
+		weaponName = sh;
+	}
+}
 
 public class Ship : Wrappable {
 
@@ -15,23 +38,26 @@ public class Ship : Wrappable {
 	private  CharacterController controller;
 	private float rotationSpeed = 200f;
 	private float speed = 10f;
-	private float projectileSpeed = 500f;
+
 	private bool dead;
+	private float deathTime;
 	private bool invincible;
 	private float invincibleStart;
 	private float invinciblePeriod = .5f;
-	private float deathTime;
 
 	//Scorekeeping
 	private static int points;
 	private static int pointsToExtraLife = 100000;
 	private static int extraLivesEarned;
 
+	private WeaponsSystem weaponsSystem;
+
 	void Start(){
 		controller = GetComponent<CharacterController>();
 		setBounds();
 		init ();
-	}
+		weaponsSystem = gameObject.AddComponent<WeaponsSystem>();
+		weaponsSystem.init (projectile);	}
 
 	void init(){
 		numLives = 3;
@@ -70,10 +96,8 @@ public class Ship : Wrappable {
 		controller.Move (velocity * Time.deltaTime);   
 		checkBounds ();
 
-		if(Input.GetButtonUp("Shoot"))
-		{
-			Rigidbody shot = Instantiate(projectile, transform.position+transform.up, transform.rotation) as Rigidbody;
-			shot.AddForce(transform.up * projectileSpeed);
+		if(Input.GetButtonUp("Shoot")){
+			weaponsSystem.shoot(projectile, transform);
 		}
 	}
 
@@ -102,7 +126,7 @@ public class Ship : Wrappable {
 	}
 
 	void updateUI(){
-		infoUI.text = "Level: "+ AsteroidManager.getLevel().ToString ()+ "\t Lives: "+ numLives.ToString();
+		infoUI.text = "Level: "+ LevelManager.getLevel().ToString ()+ "\t Lives: "+ numLives.ToString();
 		scoreUI.text = "Score: " + points.ToString ();
 	}
 

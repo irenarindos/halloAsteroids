@@ -9,7 +9,7 @@ public class Projectile : Wrappable {
 		setBounds ();
 		instantiateTime = Time.time;
 	}
-	
+
 	void Update () {	
 		//Destroy shot after lifespan is up
 		if (Time.time - instantiateTime > lifespan)

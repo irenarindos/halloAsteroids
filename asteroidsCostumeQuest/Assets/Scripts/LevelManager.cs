@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AsteroidManager : MonoBehaviour {
+public class LevelManager : MonoBehaviour {
 
 	public GameObject asteroid;
 
@@ -14,9 +14,12 @@ public class AsteroidManager : MonoBehaviour {
 	private int baseAsteroidValue = 100;
 	private int baseLevelValue = 1000;
 
+	private ShipType[] ships;
+
 	void Start () {
 		Asteroid.manager = this;
 		init ();
+		createShipTypes ();
 	}
 
 	public void init(){
@@ -25,7 +28,6 @@ public class AsteroidManager : MonoBehaviour {
 		asteroidsSpawned=0;
 		asteroidsDestroyed=0;
 		level = 1;
-
 	}
 
 	// Update is called once per frame
@@ -122,6 +124,20 @@ public class AsteroidManager : MonoBehaviour {
 
 	public static int getLevel(){
 		return level;
+	}
+
+	/*
+	 * Given more time, implement an xml loader that
+	 * reads ship properties and associates what level
+	 * they're earned at
+	 */
+	void createShipTypes(){
+		ships = new ShipType[4];
+
+		ships [0].init ("Candy Corn" ,true, 0, 10f, 200f, "candyCorn", "candyShot");
+		ships [1].init ("Knight" ,false, 2, 10f, 200f, "mrBurns", "candyShot");
+		ships [2].init ("Knight" ,false, 2, 10f, 200f, "mrBurns", "candyShot");
+		ships [3].init ("Knight" ,false, 2, 10f, 200f, "mrBurns", "candyShot");
 	}
 
 }
