@@ -147,8 +147,10 @@ public class Ship : Wrappable {
 		rend.material.mainTexture = text;
 		shipUnlocked = true;
 		unlockTime = Time.time;
-		shipUpgrade.text = st.shipName + " unlocked!";
-		shipUpgrade.enabled = true;
+		if (!restarting) {
+			shipUpgrade.text = st.shipName + " unlocked!";
+			shipUpgrade.enabled = true;
+		}
 	}
 }
 

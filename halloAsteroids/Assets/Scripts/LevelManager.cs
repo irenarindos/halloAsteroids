@@ -23,9 +23,9 @@ public class LevelManager : MonoBehaviour {
 
 	void Start () {
 		Asteroid.manager = this;
-		init ();
 		createShipTypes ();
 		shipScript = ship.GetComponent<Ship> ();
+		init ();
 	}
 
 	public void init(){
@@ -42,7 +42,8 @@ public class LevelManager : MonoBehaviour {
 		//Destroy asteroids on screen for a restart
 		if (Ship.restarting) {
 			destroyAsteroids();
-			init();
+			init();			
+			shipScript.upgradeShip (ships[0]);
 			Ship.restarting = false;
 		}
 
@@ -67,7 +68,7 @@ public class LevelManager : MonoBehaviour {
 	void checkIfLevelCleared(){
 		if (asteroidsSpawned != 0 && asteroidsToGen <= 0 && asteroidsSpawned == asteroidsDestroyed) {
 			levelCleared.enabled= true;
-			levelCleared.text= "Level "+level+" cleared.";
+			levelCleared.text= "Level "+level+" cleared";
 			level++;
 
 			checkIfShipUnlocked();
