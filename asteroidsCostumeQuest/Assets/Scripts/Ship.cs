@@ -5,26 +5,6 @@ using System.Text;
 using System.Xml;
 using System.IO;
 
-struct ShipType{
-	string shipName;
-	bool enabled;
-	int levelUnlocked;
-	float speed; 
-	float rotationSpeed;
-	string textureName;
-	string weaponName;
-
-	public void init(string n, bool e, int l, float s, float rs, string t, string sh){
-		shipName = n;
-		enabled = e;
-		levelUnlocked= l;
-		speed = s;
-		rotationSpeed = rs;
-		textureName = t;
-		weaponName = sh;
-	}
-}
-
 public class Ship : Wrappable {
 
 	public static bool restarting = false;
@@ -33,6 +13,7 @@ public class Ship : Wrappable {
 	public Text infoUI;
 	public Text scoreUI;
 	public Text gameOver;
+	public Text shipUpgrade;
 
 	private static int numLives;
 	private  CharacterController controller;
@@ -44,25 +25,30 @@ public class Ship : Wrappable {
 	private bool invincible;
 	private float invincibleStart;
 	private float invinciblePeriod = .5f;
+	private bool shipUnlocked;
+	private float unlockTime;
 
 	//Scorekeeping
 	private static int points;
 	private static int pointsToExtraLife = 100000;
 	private static int extraLivesEarned;
 
-	private WeaponsSystem weaponsSystem;
+	private static WeaponsSystem weaponsSystem;
+	private static ShipType shipType;
 
 	void Start(){
 		controller = GetComponent<CharacterController>();
 		setBounds();
 		init ();
 		weaponsSystem = gameObject.AddComponent<WeaponsSystem>();
-		weaponsSystem.init (projectile);	}
+	}
 
 	void init(){
 		numLives = 3;
 		dead = false;
 		invincible = false;
+		shipUnlocked = false;
+		shipUpgrade.enabled = false;
 		gameOver.enabled = false;
 		points = 0;
 		extraLivesEarned = 0;
@@ -106,7 +92,7 @@ public class Ship : Wrappable {
 		if (invincible)
 			return;
 
-		if (other.gameObject.tag == "asteroid" ){//|| other.gameObject.tag == "shot") {
+		if (other.gameObject.tag == "asteroid" ){
 			numLives--;
 			respawn();
 
@@ -128,20 +114,64 @@ public class Ship : Wrappable {
 	void updateUI(){
 		infoUI.text = "Level: "+ LevelManager.getLevel().ToString ()+ "\t Lives: "+ numLives.ToString();
 		scoreUI.text = "Score: " + points.ToString ();
+		if (shipUnlocked) {
+			if(Time.time - unlockTime > 2.5f){
+				shipUnlocked= false;
+				shipUpgrade.enabled= false;
+				return;
+			}
+		}
 	}
 
+	//Register game over and set timer for inactivity
 	void endGame(){
 		gameOver.enabled = true;
 		dead = true;
 		deathTime = Time.time;
 	}	
 
-	public static void addPoints(int pointVal){
+	public void addPoints(int pointVal){
 		points+= pointVal;
 		//Check if player earned an extra life
 		if(points > (pointsToExtraLife* (extraLivesEarned+1))){
 			numLives++;
 			extraLivesEarned++;
 		}
+	}
+
+	public void upgradeShip(ShipType st){
+		shipType = st;
+		weaponsSystem.setActiveWeapon (st.weapon);
+		Texture text = Resources.Load(st.textureName) as Texture;
+		Renderer rend = GetComponent<Renderer>();
+		rend.material.mainTexture = text;
+		shipUnlocked = true;
+		unlockTime = Time.time;
+		shipUpgrade.text = st.shipName + " unlocked!";
+		shipUpgrade.enabled = true;
+	}
+}
+
+
+/*
+ * Ship type indicates name of ship type, the level it's unlocked at,
+ * its acceleration speed and rotation speed, in addition to the
+ * texture and its weapon type
+ */
+public struct ShipType{
+	public string shipName;
+	public int levelUnlocked;
+	public float speed; 
+	public float rotationSpeed;
+	public string textureName;
+	public weaponType weapon;
+	
+	public void init(string n, int l, float s, float rs, string t, weaponType w){
+		shipName = n;
+		levelUnlocked= l;
+		speed = s;
+		rotationSpeed = rs;
+		textureName = t;
+		weapon= w;
 	}
 }

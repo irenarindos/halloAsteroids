@@ -5,6 +5,7 @@ using System.Collections;
 
 public class Wrappable : MonoBehaviour {
 	protected float yBound, xBound;
+	public static float zCoord = 1f;
 
 	protected void setBounds () {
 		//Calculate bounds from the camera
@@ -22,12 +23,12 @@ public class Wrappable : MonoBehaviour {
 	//Ensure position wraps if it breaches a boundary
 	protected void checkBounds(){
 		if (transform.position.x > xBound)
-			transform.position=new Vector3(-xBound, transform.position.y, 1f);
+			transform.position=new Vector3(-xBound, transform.position.y, zCoord);
 		if (transform.position.y > yBound)
-			transform.position=new Vector3(transform.position.x, -yBound, 1f);
+			transform.position=new Vector3(transform.position.x, -yBound, zCoord);
 		if (transform.position.x < -xBound)
-			transform.position=new Vector3(xBound, transform.position.y, 1f);
+			transform.position=new Vector3(xBound, transform.position.y, zCoord);
 		if (transform.position.y < -yBound)
-			transform.position=new Vector3(transform.position.x, yBound, 1f);
+			transform.position=new Vector3(transform.position.x, yBound, zCoord);
 	}
 }

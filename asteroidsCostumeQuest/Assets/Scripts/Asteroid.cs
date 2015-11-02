@@ -7,6 +7,9 @@ public class Asteroid : Wrappable {
 	public static LevelManager manager;
 	public bool isDebris = false;
 
+	//To protect against case where 2 shots hit at the same time
+	private bool destroyed = false;
+
 	// Use this for initialization
 	void Start () {
 		setBounds ();
@@ -20,6 +23,8 @@ public class Asteroid : Wrappable {
 	}
 
 	void OnTriggerEnter(Collider other) {
+		if (destroyed)
+			return;
 		if (other.gameObject.tag == "shot") {
 			if(!isDebris){
 				manager.generateDebris(transform.position);
@@ -40,6 +45,7 @@ public class Asteroid : Wrappable {
 			manager.asteroidDestroyed(isDebris, false);	
 			Destroy(gameObject);
 		}
+		destroyed = true;
 	}
 
 	//Generate a normalized random direction

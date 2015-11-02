@@ -1,11 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour {
 
 	public GameObject asteroid;
+	public GameObject ship;
+	public Text levelCleared;
 
 	private float startTime;
+	private float levelClearedTime;
 	private float asteroidGenDelta = 1f;
 	private int asteroidsToGen = 1;
 	private int asteroidsSpawned=0;
@@ -13,6 +17,7 @@ public class LevelManager : MonoBehaviour {
 	private static int level = 1;
 	private int baseAsteroidValue = 100;
 	private int baseLevelValue = 1000;
+	private Ship shipScript;
 
 	private ShipType[] ships;
 
@@ -20,6 +25,7 @@ public class LevelManager : MonoBehaviour {
 		Asteroid.manager = this;
 		init ();
 		createShipTypes ();
+		shipScript = ship.GetComponent<Ship> ();
 	}
 
 	public void init(){
@@ -28,24 +34,19 @@ public class LevelManager : MonoBehaviour {
 		asteroidsSpawned=0;
 		asteroidsDestroyed=0;
 		level = 1;
+		levelCleared.enabled = false;
 	}
 
 	// Update is called once per frame
 	void Update () {
+		//Destroy asteroids on screen for a restart
 		if (Ship.restarting) {
 			destroyAsteroids();
 			init();
 			Ship.restarting = false;
 		}
-		if (asteroidsSpawned != 0 && asteroidsSpawned == asteroidsDestroyed) {
-			level++;
-			asteroidsSpawned=0;
-			asteroidsDestroyed=0;
-			asteroidsToGen = level*level;
-			startTime= Time.time;
-			//logic to calc different level value would go here if desired
-			Ship.addPoints (baseLevelValue);
-		}
+
+		checkIfLevelCleared ();
 
 		//Check if we're done generating for this level
 		if (asteroidsToGen <= 0)
@@ -55,6 +56,35 @@ public class LevelManager : MonoBehaviour {
 			startTime= Time.time;
 			generateAsteroid(1f,generateRandomPosition(true), false);
 			asteroidsToGen--;
+		}
+	}
+
+	/*
+	 * If all asteroids generated have been destroyed, advance the level
+	 * and award points to the player for clearing the level.
+	 * Additionally, see if player has earned a new ship type
+	 */
+	void checkIfLevelCleared(){
+		if (asteroidsSpawned != 0 && asteroidsToGen <= 0 && asteroidsSpawned == asteroidsDestroyed) {
+			levelCleared.enabled= true;
+			levelCleared.text= "Level "+level+" cleared.";
+			level++;
+
+			checkIfShipUnlocked();
+
+			//Reset asteroid counts
+			asteroidsSpawned=0;
+			asteroidsDestroyed=0;
+			asteroidsToGen = level*level;
+
+			startTime= levelClearedTime = Time.time;
+
+			shipScript.addPoints (baseLevelValue);
+		}
+
+		//Check if we should still display the "level cleared" message
+		if (Time.time - levelClearedTime > 2.5f) {
+			levelCleared.enabled = false;
 		}
 	}
 
@@ -70,6 +100,7 @@ public class LevelManager : MonoBehaviour {
 		asteroidsSpawned++;
 	}
 
+	//Handle asteroid destruction and award points
 	public void asteroidDestroyed(bool isDebris, bool awardPoints){
 		asteroidsDestroyed++;
 		if (!awardPoints)
@@ -78,7 +109,7 @@ public class LevelManager : MonoBehaviour {
 		int pointVal = baseAsteroidValue;
 		if(isDebris)
 			pointVal *= 2;
-		Ship.addPoints (pointVal);
+		shipScript.addPoints (pointVal);
 	}
 
 	//Generate 4 smaller asteroids in place
@@ -88,6 +119,7 @@ public class LevelManager : MonoBehaviour {
 		}
 	}
 
+	//Destroy all asteroids on screen
 	void destroyAsteroids(){
 		GameObject [] gameObjects =  GameObject.FindGameObjectsWithTag ("asteroid");
 		
@@ -95,6 +127,10 @@ public class LevelManager : MonoBehaviour {
 			Destroy(gameObjects[i]);
 	}
 
+	/*
+	 * Generate a random position within the screen,
+	 * with the option to pin position to the edge of the screen
+	 */
 	Vector3 generateRandomPosition(bool pinToScreenEdge){
 		//Calculate bounds from the camera
 		float yBound = Camera.main.orthographicSize;  
@@ -103,7 +139,7 @@ public class LevelManager : MonoBehaviour {
 		//Generate a random position within these bounds
 		float yPos = Random.Range (-yBound, yBound);
 		float xPos = Random.Range (-xBound, xBound);
-		Vector3 randPos = new Vector3 (xPos, yPos, 1f);
+		Vector3 randPos = new Vector3 (xPos, yPos, Wrappable.zCoord);
 
 		//Pin point to screen edge
 		if (pinToScreenEdge) {
@@ -126,18 +162,26 @@ public class LevelManager : MonoBehaviour {
 		return level;
 	}
 
+	void checkIfShipUnlocked(){
+		for (int i= 0; i<4; i++) {
+			if(ships[i].levelUnlocked == level){
+				shipScript.upgradeShip (ships[i]);
+			}
+		}
+	}
+
 	/*
-	 * Given more time, implement an xml loader that
-	 * reads ship properties and associates what level
-	 * they're earned at
+	 * TODO: implement an xml loader that reads ship properties and associates what 
+	 * level they're earned at.
+	 * Currently this function loads ship types with hardcoded values
 	 */
 	void createShipTypes(){
 		ships = new ShipType[4];
 
-		ships [0].init ("Candy Corn" ,true, 0, 10f, 200f, "candyCorn", "candyShot");
-		ships [1].init ("Knight" ,false, 2, 10f, 200f, "mrBurns", "candyShot");
-		ships [2].init ("Knight" ,false, 2, 10f, 200f, "mrBurns", "candyShot");
-		ships [3].init ("Knight" ,false, 2, 10f, 200f, "mrBurns", "candyShot");
+		ships [0].init ("Candy Corn" , 1, 8f, 200f, "candyCorn", weaponType.candyShot);
+		ships [1].init ("Chocolate Kiss" , 3, 10f, 200f, "kiss", weaponType.knightShot);
+		ships [2].init ("Peanut Butter Cup" , 6, 12f, 225f, "pbCup", weaponType.ninjaShot);
+		ships [3].init ("Moonbot" , 10, 15f, 225f, "moonbot", weaponType.moonShot);
 	}
 
 }
