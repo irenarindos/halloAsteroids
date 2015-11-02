@@ -1,2 +1,4 @@
-# costumeQuestAsteroids
-Asteroids as a Costume Quest homage
+# halloAsteroids
+Halloween-themed Asteroids clone
+
+
